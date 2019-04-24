@@ -1,13 +1,14 @@
 import sys, time, argparse
 import tensorflow as tf
 import numpy as np
+import random
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from tensorflow.contrib.layers import l2_regularizer
 from tensorflow.contrib.layers import batch_norm
 
 _VALIDATION_RATIO = 0.1
-
+rng = np.random.RandomState(42)
 
 class Medgan(object):
     def __init__(self,
@@ -305,7 +306,8 @@ class Medgan(object):
                 g_loss_vec = []
                 for i in range(nBatches):
                     for _ in range(discriminatorTrainPeriod):
-                        batchIdx = np.random.choice(idx, size=batchSize, replace=False)
+                        # batchIdx = np.random.choice(idx, size=batchSize, replace=False)
+                        batchIdx = rng.permutation(len(idx))
                         batchX = trainX[batchIdx]
                         randomX = np.random.normal(size=(batchSize, self.randomDim))
                         _, discLoss = sess.run([optimize_d, loss_d], feed_dict={x_raw:batchX, x_random:randomX, keep_prob:1.0, bn_train:False})
@@ -320,7 +322,8 @@ class Medgan(object):
                 validAccVec = []
                 validAucVec = []
                 for i in range(nBatches):
-                    batchIdx = np.random.choice(idx, size=batchSize, replace=False)
+                    # batchIdx = np.random.choice(idx, size=batchSize, replace=False)
+                    batchIdx = rng.permutation(len(idx))
                     batchX = validX[batchIdx]
                     randomX = np.random.normal(size=(batchSize, self.randomDim))
                     preds_real, preds_fake, = sess.run([y_hat_real, y_hat_fake], feed_dict={x_raw:batchX, x_random:randomX, keep_prob:1.0, bn_train:False})
